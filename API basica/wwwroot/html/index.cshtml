@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Produtos</title>
+    <link href="~/css/style.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <h1>Controle de Estoque de Produtos</h1>
+    </header>
+
+    <main>
+        <section id="entrada-produto">
+            <h2>Entrada de Produto</h2>
+            <form id="form-entrada">
+                <label for="produto-nome">Nome do Produto:</label>
+                <input type="text" id="produto-nome" name="produto-nome" required>
+
+                <label for="quantidade-entrada">Quantidade:</label>
+                <input type="number" id="quantidade-entrada" name="quantidade-entrada" required>
+
+                <label for="data-entrada">Data de Entrada:</label>
+                <input type="date" id="data-entrada" name="data-entrada" required>
+
+                <button type="submit">Registrar Entrada</button>
+            </form>
+        </section>
+
+        <section id="saida-produto">
+            <h2>Saída de Produto</h2>
+            <form id="form-saida">
+                <label for="produto-nome-saida">Nome do Produto:</label>
+                <input type="text" id="produto-nome-saida" name="produto-nome-saida" required>
+
+                <label for="quantidade-saida">Quantidade:</label>
+                <input type="number" id="quantidade-saida" name="quantidade-saida" required>
+
+                <label for="data-saida">Data de Saída:</label>
+                <input type="date" id="data-saida" name="data-saida" required>
+
+                <button type="submit">Registrar Saída</button>
+            </form>
+        </section>
+
+        <section id="historico-produtos">
+            <h2>Histórico de Entradas e Saídas</h2>
+            <table id="tabela-historico">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Tipo</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- O histórico será exibido aqui -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Sistema de Controle de Produtos</p>
+    </footer>
+
+    <script>
+        // Função para registrar a entrada de produto via API
+        document.getElementById('form-entrada').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const produto = {
+                nome: document.getElementById('produto-nome').value,
+                quantidade: document.getElementById('quantidade-entrada').value,
+                data: document.getElementById('data-entrada').value,
+                tipo: 'Entrada'
+            };
+
+            const response = await fetch('/api/produto/entrada', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(produto)
+            });
+
+            if (response.ok) {
+                alert('Entrada registrada com sucesso!');
+                carregarHistorico(); // Atualiza o histórico
+            }
+        });
+
+        // Função para registrar a saída de produto via API
+        document.getElementById('form-saida').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const produto = {
+                nome: document.getElementById('produto-nome-saida').value,
+                quantidade: document.getElementById('quantidade-saida').value,
+                data: document.getElementById('data-saida').value,
+                tipo: 'Saída'
+            };
+
+            const response = await fetch('/api/produto/saida', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(produto)
+            });
+
+            if (response.ok) {
+                alert('Saída registrada com sucesso!');
+                carregarHistorico(); // Atualiza o histórico
+            }
+        });
+
+        // Função para carregar o histórico de produtos
+        async function carregarHistorico() {
+            const response = await fetch('/api/produto/historico');
+            const historico = await response.json();
+
+            const tabelaHistorico = document.getElementById('tabela-historico').getElementsByTagName('tbody')[0];
+            tabelaHistorico.innerHTML = ''; // Limpa a tabela antes de adicionar os novos dados
+
+            historico.forEach(item => {
+                const novaLinha = tabelaHistorico.insertRow();
+                novaLinha.insertCell(0).textContent = item.nome;
+                novaLinha.insertCell(1).textContent = item.quantidade;
+                novaLinha.insertCell(2).textContent = item.tipo;
+                novaLinha.insertCell(3).textContent = item.data;
+            });
+        }
+
+        // Carregar o histórico ao carregar a página
+        window.onload = carregarHistorico;
+    </script>
+</body>
+</html>
